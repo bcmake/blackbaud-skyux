@@ -186,6 +186,22 @@ More unrelated log output
       expect(result.error?.context).toHaveProperty('filePath');
     });
 
+    it('should return failure for non-Error thrown value', () => {
+      jest.mock('node:fs', () => ({
+        readFileSync: jest.fn(() => {
+          throw 'string error';
+        }),
+      }));
+      const {
+        readPercyBuildNumberFromLogFileWithDetails,
+      } = require('./read-build-number-from-logs');
+      const result =
+        readPercyBuildNumberFromLogFileWithDetails('nonexistent.log');
+      expect(result.success).toBe(false);
+      expect(result.error?.code).toBe('BUILD_ID_NOT_FOUND');
+      expect(result.error?.context).toHaveProperty('originalError');
+    });
+
     it('should return failure for file without build ID', () => {
       jest.mock('node:fs', () => ({
         readFileSync: jest.fn(() => 'No build ID in this file'),

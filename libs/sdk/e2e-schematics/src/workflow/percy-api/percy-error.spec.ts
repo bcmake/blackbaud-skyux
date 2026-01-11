@@ -149,6 +149,47 @@ describe('percy-error', () => {
       expect(result).toBe('success');
       expect(operation).toHaveBeenCalledTimes(3);
     });
+
+    it('should use default options when none provided', async () => {
+      const operation = jest.fn().mockResolvedValue('success');
+      const resultPromise = withRetry(operation);
+      await jest.runAllTimersAsync();
+      const result = await resultPromise;
+      expect(result).toBe('success');
+      expect(operation).toHaveBeenCalledTimes(1);
+    });
+
+    it('should use default shouldRetry when undefined', async () => {
+      jest.useRealTimers();
+      const operation = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('fail'))
+        .mockResolvedValue('success');
+      const resultPromise = withRetry(operation, {
+        maxAttempts: 3,
+        delayMs: 10,
+        shouldRetry: undefined,
+      });
+      const result = await resultPromise;
+      expect(result).toBe('success');
+      expect(operation).toHaveBeenCalledTimes(2);
+    });
+
+    it('should use default backoffMultiplier when undefined', async () => {
+      jest.useRealTimers();
+      const operation = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('fail'))
+        .mockResolvedValue('success');
+      const resultPromise = withRetry(operation, {
+        maxAttempts: 3,
+        delayMs: 10,
+        backoffMultiplier: undefined,
+      });
+      const result = await resultPromise;
+      expect(result).toBe('success');
+      expect(operation).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('sleep', () => {

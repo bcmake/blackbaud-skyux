@@ -360,9 +360,7 @@ export function isAlertWorthy(status: {
     return true;
   }
   if (
-    !['finished', 'waiting', 'pending', 'processing'].includes(
-      status.state ?? '',
-    )
+    !['finished', 'waiting', 'pending', 'processing'].includes(status.state)
   ) {
     return true;
   }
