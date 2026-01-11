@@ -163,6 +163,80 @@ describe('forms-storybook - input box', () => {
           },
         );
       });
+
+      it('should render disabled input box states', () => {
+        cy.skyReady('app-input-box', [], ['#input-box-disabled']);
+        cy.get('#input-box-disabled').screenshot(
+          `inputboxcomponent-inputbox--input-box-${theme}-disabled`,
+        );
+        cy.get('#input-box-disabled').percySnapshot(
+          `inputboxcomponent-inputbox--input-box-${theme}-disabled`,
+          {
+            widths: E2eVariations.DISPLAY_WIDTHS,
+            scope: '#input-box-disabled',
+          },
+        );
+      });
+
+      it('should render input box with hint text', () => {
+        cy.skyReady('app-input-box', [], ['#input-box-hint-text']);
+        cy.get('#input-box-hint-text').screenshot(
+          `inputboxcomponent-inputbox--input-box-${theme}-hint-text`,
+        );
+        cy.get('#input-box-hint-text').percySnapshot(
+          `inputboxcomponent-inputbox--input-box-${theme}-hint-text`,
+          {
+            widths: E2eVariations.DISPLAY_WIDTHS,
+            scope: '#input-box-hint-text',
+          },
+        );
+      });
+
+      it('should render input box with placeholder', () => {
+        cy.skyReady('app-input-box', [], ['#input-box-placeholder']);
+        cy.get('#input-box-placeholder').screenshot(
+          `inputboxcomponent-inputbox--input-box-${theme}-placeholder`,
+        );
+        cy.get('#input-box-placeholder').percySnapshot(
+          `inputboxcomponent-inputbox--input-box-${theme}-placeholder`,
+          {
+            widths: E2eVariations.DISPLAY_WIDTHS,
+            scope: '#input-box-placeholder',
+          },
+        );
+      });
+
+      it('should render input box with error and button', () => {
+        cy.skyReady('app-input-box', [], [
+          '#input-box-form-control-error-button-single',
+        ])
+          .get('#input-box-form-control-error-button-single input')
+          .click();
+        cy.get('#input-box-form-control-error-button-single').screenshot(
+          `inputboxcomponent-inputbox--input-box-${theme}-error-button-focus`,
+        );
+        cy.get('#input-box-form-control-error-button-single').percySnapshot(
+          `inputboxcomponent-inputbox--input-box-${theme}-error-button-focus`,
+          {
+            widths: E2eVariations.DISPLAY_WIDTHS,
+            scope: '#input-box-form-control-error-button-single',
+          },
+        );
+      });
+
+      it('should render disabled select input box', () => {
+        cy.skyReady('app-input-box', [], ['#input-box-select-disabled']);
+        cy.get('#input-box-select-disabled').screenshot(
+          `inputboxcomponent-inputbox--input-box-${theme}-select-disabled`,
+        );
+        cy.get('#input-box-select-disabled').percySnapshot(
+          `inputboxcomponent-inputbox--input-box-${theme}-select-disabled`,
+          {
+            widths: E2eVariations.DISPLAY_WIDTHS,
+            scope: '#input-box-select-disabled',
+          },
+        );
+      });
     });
   });
 });

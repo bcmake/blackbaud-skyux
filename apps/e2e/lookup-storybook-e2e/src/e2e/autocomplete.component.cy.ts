@@ -83,6 +83,42 @@ describe('lookup-storybook', () => {
           },
         );
       });
+
+      it('should render the component with input focus state', () => {
+        cy.skyReady('app-autocomplete')
+          .get('.sky-form-control')
+          .should('exist')
+          .should('be.visible')
+          .focus();
+        cy.get('app-autocomplete').screenshot(
+          `autocompletecomponent-autocomplete--autocomplete-focus-${theme}`,
+        );
+        cy.get('app-autocomplete').percySnapshot(
+          `autocompletecomponent-autocomplete--autocomplete-focus-${theme}`,
+          {
+            widths: E2eVariations.DISPLAY_WIDTHS,
+          },
+        );
+      });
+
+      it('should render the component with highlighted result', () => {
+        cy.skyReady('app-autocomplete')
+          .get('.sky-form-control')
+          .should('exist')
+          .should('be.visible')
+          .type('a');
+        cy.get('.sky-autocomplete-result').first().trigger('mouseover');
+        cy.get('app-autocomplete').screenshot(
+          `autocompletecomponent-autocomplete--autocomplete-result-hover-${theme}`,
+        );
+        cy.get('app-autocomplete').percySnapshot(
+          `autocompletecomponent-autocomplete--autocomplete-result-hover-${theme}`,
+          {
+            minHeight: 900,
+            widths: E2eVariations.DISPLAY_WIDTHS,
+          },
+        );
+      });
     });
   });
 });

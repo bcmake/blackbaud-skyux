@@ -82,6 +82,55 @@ describe('colorpicker-storybook', () => {
           );
         });
       });
+
+      it('should render colorpicker button in hover state', () => {
+        cy.skyReady('app-colorpicker', ['#ready']);
+        cy.get('.sky-colorpicker-button').first().trigger('mouseover');
+        cy.get('app-colorpicker').screenshot(
+          `colorpickercomponent-colorpicker--colorpicker-${theme}-hover`,
+        );
+        cy.get('app-colorpicker').percySnapshot(
+          `colorpickercomponent-colorpicker--colorpicker-${theme}-hover`,
+          {
+            widths: E2eVariations.DISPLAY_WIDTHS,
+          },
+        );
+      });
+
+      it('should render colorpicker button in focus state', () => {
+        cy.skyReady('app-colorpicker', ['#ready']);
+        cy.get('.sky-colorpicker-button').first().focus();
+        cy.get('app-colorpicker').screenshot(
+          `colorpickercomponent-colorpicker--colorpicker-${theme}-focus`,
+        );
+        cy.get('app-colorpicker').percySnapshot(
+          `colorpickercomponent-colorpicker--colorpicker-${theme}-focus`,
+          {
+            widths: E2eVariations.DISPLAY_WIDTHS,
+          },
+        );
+      });
+
+      it('should render colorpicker with preset color selected', () => {
+        cy.skyReady('app-colorpicker', ['#ready']);
+        cy.get('#colorpicker-12-presets-fa-icon .sky-colorpicker-button')
+          .should('exist')
+          .should('be.visible')
+          .click();
+        cy.get('.sky-colorpicker-container')
+          .should('exist')
+          .should('be.visible');
+        cy.get('.sky-preset-color').eq(3).click();
+        cy.get('app-colorpicker').screenshot(
+          `colorpickercomponent-colorpicker--colorpicker-${theme}-preset-selected`,
+        );
+        cy.get('app-colorpicker').percySnapshot(
+          `colorpickercomponent-colorpicker--colorpicker-${theme}-preset-selected`,
+          {
+            widths: E2eVariations.DISPLAY_WIDTHS,
+          },
+        );
+      });
     });
   });
 });

@@ -25,6 +25,29 @@ describe('layout-storybook - fluid-grid', () => {
           });
         });
       });
+
+      E2eVariations.MOBILE_WIDTHS.forEach((width) => {
+        describe(`at mobile width ${width}px`, () => {
+          beforeEach(() => {
+            cy.viewport(width, 960);
+            cy.visit(
+              `/iframe.html?globals=theme:${theme}&id=fluidgridcomponent-fluidgrid--fluid-grid`,
+            );
+          });
+
+          it(`should render the component at mobile width ${width}`, () => {
+            cy.skyReady('app-fluid-grid').screenshot(
+              `fluidgridcomponent-fluidgrid--fluid-grid-${theme}-mobile-${width}`,
+            );
+            cy.percySnapshot(
+              `fluidgridcomponent-fluidgrid--fluid-grid-${theme}-mobile-${width}`,
+              {
+                widths: [width],
+              },
+            );
+          });
+        });
+      });
     });
   });
 });
