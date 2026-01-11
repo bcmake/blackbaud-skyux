@@ -20,6 +20,8 @@ export {
   GridStateOrchestrator,
 } from './lib/modules/list-view-grid/state/grid-state.rxstate';
 export { GridState } from './lib/modules/list-view-grid/state/grid-state.state-node';
+export { NewGridState } from './lib/modules/list-view-grid/state/new-grid-state';
+export { NewGridStateDispatcher } from './lib/modules/list-view-grid/state/new-grid-state-dispatcher';
 
 export { SkyListViewGridMessage } from './lib/modules/list-view-grid/types/list-view-grid-message';
 export { SkyListViewGridMessageType } from './lib/modules/list-view-grid/types/list-view-grid-message-type';
