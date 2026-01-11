@@ -57,6 +57,59 @@ describe('dropdown-storybook', () => {
           });
         });
       });
+
+      it('should render dropdown button in hover state', () => {
+        cy.visit(
+          `/iframe.html?globals=theme:${theme}&id=dropdowncomponent-dropdown--dropdown-default-button`,
+        );
+        cy.skyReady('app-dropdown');
+        cy.get('.sky-dropdown-button').first().trigger('mouseover');
+        cy.get('app-dropdown').screenshot(
+          `dropdowncomponent-dropdown--dropdown-default-button-${theme}-hover`,
+        );
+        cy.get('app-dropdown').percySnapshot(
+          `dropdowncomponent-dropdown--dropdown-default-button-${theme}-hover`,
+          {
+            widths: E2eVariations.DISPLAY_WIDTHS,
+          },
+        );
+      });
+
+      it('should render dropdown button in focus state', () => {
+        cy.visit(
+          `/iframe.html?globals=theme:${theme}&id=dropdowncomponent-dropdown--dropdown-default-button`,
+        );
+        cy.skyReady('app-dropdown');
+        cy.get('.sky-dropdown-button').first().focus();
+        cy.get('app-dropdown').screenshot(
+          `dropdowncomponent-dropdown--dropdown-default-button-${theme}-focus`,
+        );
+        cy.get('app-dropdown').percySnapshot(
+          `dropdowncomponent-dropdown--dropdown-default-button-${theme}-focus`,
+          {
+            widths: E2eVariations.DISPLAY_WIDTHS,
+          },
+        );
+      });
+
+      it('should render dropdown menu item in hover state', () => {
+        cy.visit(
+          `/iframe.html?globals=theme:${theme}&id=dropdowncomponent-dropdown--dropdown-left-aligned`,
+        );
+        cy.skyReady('app-dropdown');
+        cy.get('.sky-dropdown-button').first().click();
+        cy.get('.sky-dropdown-menu').should('exist').should('be.visible');
+        cy.get('.sky-dropdown-item').first().trigger('mouseover');
+        cy.get('app-dropdown').screenshot(
+          `dropdowncomponent-dropdown--dropdown-menu-item-${theme}-hover`,
+        );
+        cy.get('app-dropdown').percySnapshot(
+          `dropdowncomponent-dropdown--dropdown-menu-item-${theme}-hover`,
+          {
+            widths: E2eVariations.DISPLAY_WIDTHS,
+          },
+        );
+      });
     });
   });
 });
