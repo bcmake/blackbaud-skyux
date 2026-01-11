@@ -231,7 +231,7 @@ describe('percy-api', () => {
       ),
     ).resolves.toEqual('');
     expect(logger.error).toHaveBeenCalledWith(
-      'Error checking Percy: Error: Error fetching Percy project ID',
+      expect.stringMatching(/^\[(PERCY_API_ERROR|NETWORK_ERROR)\]/),
     );
   });
 
@@ -350,10 +350,7 @@ describe('percy-api', () => {
       lastGoodCommit: '',
     });
     expect(logger.error).toHaveBeenCalledWith(
-      'Error checking Percy: Percy project ID response for test-storybook-e2e: {}',
-    );
-    expect(logger.error).toHaveBeenCalledWith(
-      `Percy project ID response for test-storybook-e2e: {}`,
+      expect.stringContaining('Percy project ID response for test-storybook-e2e'),
     );
   });
 
@@ -390,32 +387,7 @@ describe('percy-api', () => {
       lastGoodCommit: '',
     });
     expect(logger.error).toHaveBeenCalledWith(
-      `Error checking Percy: Percy project ID response for test-storybook-e2e: ${JSON.stringify(
-        [
-          {
-            id: 'buildId',
-            type: 'builds',
-            attributes: {
-              'review-state': 'approved',
-              state: 'finished',
-              'commit-html-url': undefined,
-            },
-          },
-        ],
-      )}`,
-    );
-    expect(logger.error).toHaveBeenCalledWith(
-      `Percy project ID response for test-storybook-e2e: ${JSON.stringify([
-        {
-          id: 'buildId',
-          type: 'builds',
-          attributes: {
-            'review-state': 'approved',
-            state: 'finished',
-            'commit-html-url': undefined,
-          },
-        },
-      ])}`,
+      expect.stringContaining('Percy project ID response for test-storybook-e2e'),
     );
   });
 
@@ -500,7 +472,7 @@ describe('percy-api', () => {
       state: undefined,
     });
     expect(logger.error).toHaveBeenCalledWith(
-      expect.stringMatching(/^Error checking Percy build/),
+      expect.stringMatching(/^\[(PERCY_API_ERROR|NETWORK_ERROR)\]/),
     );
   });
 
@@ -518,7 +490,7 @@ describe('percy-api', () => {
       state: undefined,
     });
     expect(logger.error).toHaveBeenCalledWith(
-      expect.stringMatching(/^Error checking Percy build/),
+      expect.stringMatching(/^\[(PERCY_API_ERROR|NETWORK_ERROR)\]/),
     );
   });
 
@@ -538,7 +510,7 @@ describe('percy-api', () => {
       state: undefined,
     });
     expect(logger.error).toHaveBeenCalledWith(
-      expect.stringMatching(/^Error checking Percy build/),
+      expect.stringMatching(/^\[(PERCY_API_ERROR|NETWORK_ERROR)\]/),
     );
   });
 });

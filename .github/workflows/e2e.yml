@@ -336,51 +336,106 @@ jobs:
           set +e
           set +o pipefail
 
+          LOG_FILE="${{ runner.temp }}/percy-${{ matrix.project }}.log"
+          BUILD_FILE="${{ runner.temp }}/percy-build-${{ matrix.project }}.txt"
+
           echo '# PERCY_TARGET_BRANCH' $PERCY_TARGET_BRANCH
           echo '# PERCY_TARGET_COMMIT' $PERCY_TARGET_COMMIT
 
+          # Print a visual separator for log readability
           separator() {
-            echo ''; echo $(printf "=%.s" {1..80}); echo '';
+            echo ''
+            echo '================================================================================'
+            echo ''
           }
 
+          # Check log file for success indicators
+          # Sets FINALIZED and SUCCESS variables
           check_logs() {
             separator
-            echo -n "Checking for finalized build: "
-            grep -E '^\[percy] Finalized build ' ${{ runner.temp }}/percy-${{ matrix.project }}.log || true
-            FINALIZED=$(grep -cE '^\[percy] Finalized build ' ${{ runner.temp }}/percy-${{ matrix.project }}.log)
-            echo -n "Checking exit code: "
-            grep -E ' exited with status: 0$' ${{ runner.temp }}/percy-${{ matrix.project }}.log || true
-            SUCCESS=$(grep -cE ' exited with status: 0$' ${{ runner.temp }}/percy-${{ matrix.project }}.log)
+            echo "=== Percy Log Analysis ==="
+
+            # Check for finalized build
+            echo -n "Finalized build: "
+            if grep -qE '^\[percy] Finalized build ' "$LOG_FILE"; then
+              grep -E '^\[percy] Finalized build ' "$LOG_FILE"
+              FINALIZED=1
+            else
+              echo "NOT FOUND"
+              FINALIZED=0
+            fi
+
+            # Check for successful exit
+            echo -n "Exit status: "
+            if grep -qE ' exited with status: 0$' "$LOG_FILE"; then
+              echo "SUCCESS (0)"
+              SUCCESS=1
+            else
+              echo "FAILED or NOT FOUND"
+              SUCCESS=0
+            fi
+
             separator
           }
 
-          # Timing setting recommended by https://docs.percy.io/docs/cypress#missing-assets
-          npx percy exec -t 350 -- nx e2e ${{ matrix.project }} -c ci --no-parallel 2>&1 | tee ${{ runner.temp }}/percy-${{ matrix.project }}.log
+          # Check if error is retryable based on known patterns
+          is_retryable_error() {
+            local patterns=(
+              "This is likely a client error"
+              "Error: Can only finalize pending builds"
+              "Module loop: this module is already being loaded"
+              "Failed to connect to the bus: Could not parse server address: Unknown address type"
+            )
+            for pattern in "${patterns[@]}"; do
+              if grep -qF "$pattern" "$LOG_FILE"; then
+                echo "Found retryable error: $pattern"
+                return 0
+              fi
+            done
+            return 1
+          }
+
+          # Run Percy E2E tests
+          run_percy() {
+            echo "Running Percy E2E tests for ${{ matrix.project }}..."
+            # Timing setting recommended by https://docs.percy.io/docs/cypress#missing-assets
+            npx percy exec -t 350 -- nx e2e ${{ matrix.project }} -c ci --no-parallel 2>&1 | tee "$LOG_FILE"
+            return ${PIPESTATUS[0]}
+          }
+
+          # First attempt
+          run_percy
           RESULT=$?
           check_logs
+
+          # Determine if retry is needed
           if [ $RESULT -ne 0 ] || [ $SUCCESS -eq 0 ] || [ $FINALIZED -eq 0 ]; then
-            RETRY=$(grep -cE '(This is likely a client error|Error: Can only finalize pending builds|Module loop: this module is already being loaded|Failed to connect to the bus: Could not parse server address: Unknown address type)' ${{ runner.temp }}/percy-${{ matrix.project }}.log)
-            if [ $RETRY -gt 0 ] || [ $FINALIZED -eq 0 ]; then
-              echo "Retrying..."
+            if is_retryable_error || [ $FINALIZED -eq 0 ]; then
+              echo "=== Retrying Percy E2E tests ==="
               separator
               set -eo pipefail
-              npx percy exec -t 350 -- nx e2e ${{ matrix.project }} -c ci --no-parallel 2>&1 | tee ${{ runner.temp }}/percy-${{ matrix.project }}.log
+              run_percy
               check_logs
+
+              # Verify retry succeeded
               if [ $SUCCESS -eq 0 ]; then
-                echo "Test failed."
+                echo "ERROR: Test failed after retry."
                 exit 1
               fi
               if [ $FINALIZED -eq 0 ]; then
-                echo "Unable to finalize Percy build."
+                echo "ERROR: Unable to finalize Percy build after retry."
                 exit 1
               fi
             else
-              echo "Exiting."
+              echo "ERROR: Non-retryable failure detected."
               exit 1
             fi
           fi
+
           # Extract the Percy build number from the log
-          node -e "const wf = require('./dist/libs/sdk/e2e-schematics/src/workflow/index.js'); console.log(wf.readPercyBuildNumberFromLogFile('${{ runner.temp }}/percy-${{ matrix.project }}.log') ?? '');" > ${{ runner.temp }}/percy-build-${{ matrix.project }}.txt
+          echo "Extracting Percy build number..."
+          node -e "const wf = require('./dist/libs/sdk/e2e-schematics/src/workflow/index.js'); console.log(wf.readPercyBuildNumberFromLogFile('$LOG_FILE') ?? '');" > "$BUILD_FILE"
+          echo "Build number saved to: $BUILD_FILE"
         env:
           PERCY_TARGET_BRANCH: ${{ needs.install-deps.outputs.base-branch }}
           PERCY_TARGET_COMMIT: ${{ steps.affected.outputs.percy_target_commit }}

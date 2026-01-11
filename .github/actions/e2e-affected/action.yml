@@ -35,84 +35,142 @@ runs:
       uses: actions/github-script@v8
       with:
         script: |
-          if ('${{ inputs.percy-token }}'.trim() === '') {
-            core.warning(`
-              The secret PERCY_TOKEN_${'${{ inputs.project }}'.toUpperCase()} is not set. Unabled to check for previous run.
+          const PROJECT = '${{ inputs.project }}';
+          const PROJECT_SLUG = `skyux-${PROJECT}`;
+          const HEAD_COMMIT = '${{ inputs.head }}';
+          const BASE_COMMIT = '${{ inputs.base }}';
+          const BRANCH = '${{ inputs.branch }}';
+          const ALLOW_DELETED = '${{ inputs.allow-deleted-screenshots }}' !== 'false';
 
-              Generate a project token at https://percy.io/82a32315/web/skyux-${{ inputs.project }}/settings and add it to https://github.com/${{ github.repository }}/settings/secrets/actions\n`);
+          // Validate Percy token
+          const percyToken = '${{ inputs.percy-token }}'.trim();
+          if (!percyToken) {
+            const tokenName = `PERCY_TOKEN_${PROJECT.toUpperCase()}`;
+            core.warning([
+              `Percy token ${tokenName} is not set. Unable to check for previous run.`,
+              ``,
+              `To fix this:`,
+              `1. Generate a project token at https://percy.io/82a32315/web/${PROJECT_SLUG}/settings`,
+              `2. Add it to https://github.com/${{ github.repository }}/settings/secrets/actions`,
+            ].join('\n'));
             core.setOutput('affected', 'true');
-            process.exit(0);
+            core.setOutput('percy_target_commit', '');
+            return;
           }
 
-          const options = {
+          // Configure fetch options for Percy API
+          const fetchOptions = {
             method: 'GET',
             headers: {
-              Authorization: 'Token ${{ inputs.percy-token }}'
+              Authorization: `Token ${percyToken}`
             }
           };
 
-          // Find commits that ran through the e2e workflow on the PR branch.
-          const prBranchCommitsBuilt = await github.rest.actions.listWorkflowRuns({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            workflow_id: 'e2e.yml',
-            branch: '${{ inputs.branch }}',
-            status: 'completed',
-          })
-            .then(({data}) => data.workflow_runs.map(run => run.head_sha).filter(Boolean))
-            .catch(() => []);
+          // Helper function to safely fetch commits from workflow runs
+          async function getPrBranchCommits() {
+            try {
+              const { data } = await github.rest.actions.listWorkflowRuns({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'e2e.yml',
+                branch: BRANCH,
+                status: 'completed',
+              });
+              const commits = data.workflow_runs.map(run => run.head_sha).filter(Boolean);
+              core.debug(`Found ${commits.length} commits from PR branch workflow runs`);
+              return commits;
+            } catch (error) {
+              core.warning(`Failed to fetch PR branch commits: ${error.message}`);
+              return [];
+            }
+          }
 
-          // Getting 500 commits to the base branch, looking for one where this e2e test was affected and run.
-          const targetBranchCommits = await exec.getExecOutput('git', ['log', '--format=%H', '-500', '${{ inputs.base }}'])
-            .then(({stdout}) => stdout.trim().split('\n'))
-            .catch(() => []);
+          // Helper function to safely fetch target branch commits
+          async function getTargetBranchCommits() {
+            try {
+              const { stdout } = await exec.getExecOutput('git', ['log', '--format=%H', '-500', BASE_COMMIT]);
+              const commits = stdout.trim().split('\n').filter(Boolean);
+              core.debug(`Found ${commits.length} commits from target branch`);
+              return commits;
+            } catch (error) {
+              core.warning(`Failed to fetch target branch commits: ${error.message}`);
+              return [];
+            }
+          }
 
+          // Helper function to check affected projects
+          async function getAffectedProjects(baseCommit) {
+            try {
+              const { stdout } = await exec.getExecOutput('npx', [
+                'nx', 'show', 'projects',
+                `--base=${baseCommit}`,
+                `--head=${HEAD_COMMIT}`,
+                '--withTarget=e2e',
+                '--affected',
+                '--json'
+              ]);
+              return JSON.parse(stdout);
+            } catch (error) {
+              core.warning(`Failed to get affected projects: ${error.message}`);
+              return [PROJECT]; // Default to affected if check fails
+            }
+          }
+
+          // Fetch commits in parallel
+          const [prBranchCommits, targetBranchCommits] = await Promise.all([
+            getPrBranchCommits(),
+            getTargetBranchCommits()
+          ]);
+
+          // Load Percy workflow utilities
           const { getLastGoodPercyBuild, getPercyTargetCommit } = require('./dist/libs/sdk/e2e-schematics/src/workflow');
+
+          // Get Percy target commit for comparison
           const targetCommit = await getPercyTargetCommit(
-            'skyux-${{ inputs.project }}',
+            PROJECT_SLUG,
             targetBranchCommits,
             core,
-            (url) => fetch(url, options)
-          )
-            .catch(() => '');
+            (url) => fetch(url, fetchOptions)
+          ).catch((error) => {
+            core.warning(`Failed to get Percy target commit: ${error.message}`);
+            return '';
+          });
           core.setOutput('percy_target_commit', targetCommit);
+
+          // Get last good Percy build
           const { lastGoodCommit, buildId } = await getLastGoodPercyBuild(
-            'skyux-${{ inputs.project }}',
-            prBranchCommitsBuilt,
-            '${{ inputs.allow-deleted-screenshots }}' !== 'false',
+            PROJECT_SLUG,
+            prBranchCommits,
+            ALLOW_DELETED,
             core,
-            (url) => fetch(url, options)
+            (url) => fetch(url, fetchOptions)
           );
 
+          // No previous good build found - need to run tests
           if (!lastGoodCommit) {
-            core.info('No good Percy test found, running e2e tests');
+            core.info('No previous approved Percy build found. Running e2e tests.');
             core.setOutput('affected', 'true');
-            process.exit(0);
+            return;
           }
 
-          if (lastGoodCommit === '${{ inputs.head }}') {
+          // Current commit already has an approved build
+          if (lastGoodCommit === HEAD_COMMIT) {
             const fs = require('fs');
-            fs.writeFileSync(`${{ runner.temp }}/percy-build-${{ inputs.project }}.txt`, buildId);
-            core.info(`The build for ${lastGoodCommit.substring(0, 7)} already passed.`);
+            const buildFile = `${{ runner.temp }}/percy-build-${PROJECT}.txt`;
+            fs.writeFileSync(buildFile, String(buildId));
+            core.info(`Build for commit ${lastGoodCommit.substring(0, 7)} already approved (build ${buildId}).`);
             core.setOutput('affected', 'false');
-            process.exit(0);
+            return;
           }
 
-          const affectedProjects = await exec.getExecOutput('npx', [
-            'nx',
-            'show',
-            'projects',
-            `--base=${lastGoodCommit}`,
-            '--head=${{ inputs.head }}',
-            '--withTarget=e2e',
-            '--affected',
-            '--json'
-          ]).then(({stdout}) => JSON.parse(stdout)).catch(() => ['${{ inputs.project }}']);
-          const projectAffected = affectedProjects.includes('${{ inputs.project }}');
-          if (projectAffected) {
-            core.info(`E2E tests affected`);
+          // Check if project is affected by changes since last good commit
+          const affectedProjects = await getAffectedProjects(lastGoodCommit);
+          const isAffected = affectedProjects.includes(PROJECT);
+
+          if (isAffected) {
+            core.info(`Project ${PROJECT} is affected by changes since ${lastGoodCommit.substring(0, 7)}.`);
             core.setOutput('affected', 'true');
           } else {
-            core.info(`No e2e tests affected since ${lastGoodCommit.substring(0, 7)}`);
+            core.info(`Project ${PROJECT} is not affected by changes since ${lastGoodCommit.substring(0, 7)}.`);
             core.setOutput('affected', 'false');
           }
