@@ -18,6 +18,8 @@
   ],
   "compilerOptions": {
     "strict": false,
-    "noImplicitReturns": false
+    "noImplicitReturns": false,
+    "module": "preserve",
+    "moduleResolution": "bundler"
   }
 }

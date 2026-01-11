@@ -575,7 +575,7 @@ describe('standalone', () => {
     );
     await expect(
       runner.runSchematic('standalone-migration', {}, tree),
-    ).rejects.toThrowError(
+    ).rejects.toThrow(
       `Could not find package @skyux/missing -- please run 'npm install'.`,
     );
   });
@@ -641,7 +641,7 @@ describe('standalone', () => {
 
       await expect(
         runner.runSchematic('standalone-migration', {}, tree),
-      ).rejects.toThrowError('Error while converting to standalone modules');
+      ).rejects.toThrow('Error while converting to standalone modules');
     });
 
     it('should preserve original error as cause', async () => {
