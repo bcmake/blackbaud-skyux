@@ -158,10 +158,9 @@ export function isRetryableError(error: unknown): boolean {
   }
 
   if (error instanceof PercyError) {
-    return [
-      PercyErrorCode.NETWORK_ERROR,
-      PercyErrorCode.API_ERROR,
-    ].includes(error.code);
+    return [PercyErrorCode.NETWORK_ERROR, PercyErrorCode.API_ERROR].includes(
+      error.code,
+    );
   }
 
   return false;
@@ -180,7 +179,9 @@ export function toPercyError(
   }
 
   if (error instanceof Error) {
-    const code = isNetworkError(error) ? PercyErrorCode.NETWORK_ERROR : defaultCode;
+    const code = isNetworkError(error)
+      ? PercyErrorCode.NETWORK_ERROR
+      : defaultCode;
     return new PercyError(code, error.message, {
       ...context,
       originalError: error.name,
@@ -358,7 +359,11 @@ export function isAlertWorthy(status: {
   if (typeof status.state === 'undefined') {
     return true;
   }
-  if (!['finished', 'waiting', 'pending', 'processing'].includes(status.state ?? '')) {
+  if (
+    !['finished', 'waiting', 'pending', 'processing'].includes(
+      status.state ?? '',
+    )
+  ) {
     return true;
   }
   return false;

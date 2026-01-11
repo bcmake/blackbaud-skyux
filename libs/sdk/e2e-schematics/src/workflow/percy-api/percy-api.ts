@@ -1,3 +1,5 @@
+import { Logger } from '../verify-e2e/verify-e2e';
+
 import {
   PercyErrorCode,
   logDebug,
@@ -5,7 +7,6 @@ import {
   logWarning,
   toPercyError,
 } from './percy-error';
-import { Logger } from '../verify-e2e/verify-e2e';
 
 /**
  * Percy build data structure from the API
@@ -131,7 +132,11 @@ export async function checkPercyBuild(
         removedSnapshots,
       };
     } else {
-      logWarning(logger, `No Percy build found for ${project} build ${buildId}`, context);
+      logWarning(
+        logger,
+        `No Percy build found for ${project} build ${buildId}`,
+        context,
+      );
     }
   } catch (error) {
     const percyError = toPercyError(error, PercyErrorCode.API_ERROR, context);
@@ -177,7 +182,11 @@ export async function getLastGoodPercyBuild(
   fetchClient: Fetch = fetch,
 ): Promise<{ lastGoodCommit: string; buildId: number }> {
   const emptyResult = { lastGoodCommit: '', buildId: 0 };
-  const context = { project, shaCount: shaArray.length, allowDeletedScreenshots };
+  const context = {
+    project,
+    shaCount: shaArray.length,
+    allowDeletedScreenshots,
+  };
 
   if (shaArray.length === 0) {
     logDebug(logger, `No commits to check for last good build`, context);
@@ -209,7 +218,10 @@ export async function getLastGoodPercyBuild(
           logWarning(
             logger,
             `Percy build ${previousBuild?.id} has removed screenshots. Re-running.`,
-            { buildId: previousBuild.id, removedSnapshotsCount: removedSnapshots.length },
+            {
+              buildId: previousBuild.id,
+              removedSnapshotsCount: removedSnapshots.length,
+            },
           );
           return emptyResult;
         }
@@ -288,7 +300,9 @@ export async function getPercyTargetCommit(
       ).then((builds) => builds.pop());
 
       if (build?.id) {
-        const targetCommit = build.attributes['commit-html-url'].split('/').pop() as string;
+        const targetCommit = build.attributes['commit-html-url']
+          .split('/')
+          .pop() as string;
         logDebug(logger, `Found Percy target commit`, {
           ...context,
           targetCommit,
@@ -298,7 +312,11 @@ export async function getPercyTargetCommit(
       }
     }
 
-    logDebug(logger, `No finished Percy build found for target commit`, context);
+    logDebug(
+      logger,
+      `No finished Percy build found for target commit`,
+      context,
+    );
     return '';
   } catch (error) {
     const percyError = toPercyError(error, PercyErrorCode.API_ERROR, context);

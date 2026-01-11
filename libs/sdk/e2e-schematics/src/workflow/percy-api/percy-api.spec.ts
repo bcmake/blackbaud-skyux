@@ -350,7 +350,9 @@ describe('percy-api', () => {
       lastGoodCommit: '',
     });
     expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Percy project ID response for test-storybook-e2e'),
+      expect.stringContaining(
+        'Percy project ID response for test-storybook-e2e',
+      ),
     );
   });
 
@@ -387,7 +389,9 @@ describe('percy-api', () => {
       lastGoodCommit: '',
     });
     expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Percy project ID response for test-storybook-e2e'),
+      expect.stringContaining(
+        'Percy project ID response for test-storybook-e2e',
+      ),
     );
   });
 

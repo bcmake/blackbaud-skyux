@@ -44,7 +44,8 @@ More output
 
   describe('extractBuildIdWithDetails', () => {
     it('should return success with finalized_log source for full pattern', () => {
-      const log = '[percy] Finalized build #123: https://percy.io/org/project/builds/99999999';
+      const log =
+        '[percy] Finalized build #123: https://percy.io/org/project/builds/99999999';
       const result = extractBuildIdWithDetails(log);
       expect(result.success).toBe(true);
       expect(result.data?.buildId).toBe('99999999');
@@ -154,14 +155,16 @@ More unrelated log output
     });
 
     it('should return success with file path for valid log file', () => {
-      const mockLog = '[percy] Finalized build #123: https://percy.io/org/project/builds/77777777';
+      const mockLog =
+        '[percy] Finalized build #123: https://percy.io/org/project/builds/77777777';
       jest.mock('node:fs', () => ({
         readFileSync: jest.fn(() => mockLog),
       }));
       const {
         readPercyBuildNumberFromLogFileWithDetails,
       } = require('./read-build-number-from-logs');
-      const result = readPercyBuildNumberFromLogFileWithDetails('test/path.log');
+      const result =
+        readPercyBuildNumberFromLogFileWithDetails('test/path.log');
       expect(result.success).toBe(true);
       expect(result.data?.buildId).toBe('77777777');
       expect(result.data?.filePath).toBe('test/path.log');
@@ -176,7 +179,8 @@ More unrelated log output
       const {
         readPercyBuildNumberFromLogFileWithDetails,
       } = require('./read-build-number-from-logs');
-      const result = readPercyBuildNumberFromLogFileWithDetails('nonexistent.log');
+      const result =
+        readPercyBuildNumberFromLogFileWithDetails('nonexistent.log');
       expect(result.success).toBe(false);
       expect(result.error?.code).toBe('BUILD_ID_NOT_FOUND');
       expect(result.error?.context).toHaveProperty('filePath');

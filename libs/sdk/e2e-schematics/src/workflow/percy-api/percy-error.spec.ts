@@ -1,23 +1,23 @@
 import {
   PercyError,
   PercyErrorCode,
-  success,
-  failure,
-  withRetry,
-  sleep,
-  isNetworkError,
-  isRetryableError,
-  toPercyError,
-  logError,
-  logWarning,
-  logDebug,
+  RETRYABLE_ERROR_PATTERNS,
   containsRetryableError,
-  logContainsFinalizedBuild,
-  logContainsSuccessExit,
-  validatePercyToken,
+  failure,
   formatBuildStatus,
   isAlertWorthy,
-  RETRYABLE_ERROR_PATTERNS,
+  isNetworkError,
+  isRetryableError,
+  logContainsFinalizedBuild,
+  logContainsSuccessExit,
+  logDebug,
+  logError,
+  logWarning,
+  sleep,
+  success,
+  toPercyError,
+  validatePercyToken,
+  withRetry,
 } from './percy-error';
 
 describe('percy-error', () => {
@@ -195,9 +195,7 @@ describe('percy-error', () => {
         ),
       ).toBe(true);
       expect(
-        isRetryableError(
-          new PercyError(PercyErrorCode.API_ERROR, 'API error'),
-        ),
+        isRetryableError(new PercyError(PercyErrorCode.API_ERROR, 'API error')),
       ).toBe(true);
     });
 
