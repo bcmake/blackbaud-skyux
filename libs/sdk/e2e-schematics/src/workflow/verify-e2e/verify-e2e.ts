@@ -1,24 +1,51 @@
 import { existsSync, readFileSync } from 'fs';
 
 import { BuildSummary, Fetch, checkPercyBuild } from '../percy-api/percy-api';
+import {
+  formatBuildStatus,
+  isAlertWorthy,
+  logDebug,
+} from '../percy-api/percy-error';
 import { readPercyBuildNumberFromLogString } from '../percy-api/read-build-number-from-logs';
 
-interface WorkflowJob {
+/**
+ * Represents a GitHub Actions workflow job
+ */
+export interface WorkflowJob {
   id: string;
   name: string;
   conclusion: string;
   steps: WorkflowJobStep[];
 }
-interface WorkflowJobStep {
+
+/**
+ * Represents a step within a workflow job
+ */
+export interface WorkflowJobStep {
   name: string;
   conclusion: string;
 }
-interface WorkflowStepSummary {
+
+/**
+ * Summary of a Percy workflow step
+ */
+export interface WorkflowStepSummary {
   project: string;
   skipped: boolean;
   succeeded: boolean;
 }
 
+/**
+ * Result of retrieving a build ID
+ */
+export interface BuildIdResult {
+  buildId: string | undefined;
+  source: 'file' | 'logs' | 'not_found';
+}
+
+/**
+ * GitHub Actions core interface
+ */
 type Core = {
   debug: (message: string) => void;
   error: (message: string) => void;
@@ -29,6 +56,9 @@ type Core = {
   setOutput: (name: string, value: string) => void;
 };
 
+/**
+ * Logger interface for Percy operations
+ */
 export type Logger = Pick<
   Core,
   'debug' | 'error' | 'info' | 'notice' | 'warning'
@@ -95,45 +125,53 @@ export async function verifyE2e(
       project: string;
       removedSnapshots: string[];
     }[] = [];
+
     for (const e2eProject of e2eProjects) {
-      let icon: string;
-      let summary: string;
       const checkThis = e2eProjectsToCheck.includes(e2eProject);
       let projectStatus: Partial<BuildSummary> = {};
+
       if (checkThis) {
-        const buildIdFile = buildIdFiles.find((file) =>
-          file.endsWith(`/percy-build-${e2eProject}.txt`),
+        // Retrieve build ID from file or logs
+        const buildIdResult = await retrieveBuildId(
+          e2eProject,
+          buildIdFiles,
+          jobs,
+          githubApi.downloadJobLogs,
+          core,
         );
-        let buildId: string | undefined;
-        if (!buildIdFile || !existsSync(buildIdFile)) {
-          buildId = await readBuildIdFromLogs(
-            e2eProject,
-            jobs,
-            githubApi.downloadJobLogs,
-          );
-        } else {
-          buildId = readFileSync(buildIdFile, 'utf-8').trim();
-        }
-        if (!buildId) {
+
+        if (!buildIdResult.buildId) {
           reviewComplete = false;
           alertWorthy = true;
           core.warning(`🚫 ${e2eProject} (unable to retrieve percy build ID)`);
+          logDebug(core, `Build ID retrieval failed for ${e2eProject}`, {
+            source: buildIdResult.source,
+          });
           continue;
         }
 
+        logDebug(core, `Retrieved build ID for ${e2eProject}`, {
+          buildId: buildIdResult.buildId,
+          source: buildIdResult.source,
+        });
+
         projectStatus = await checkPercyBuild(
           `skyux-${e2eProject}`,
-          buildId,
+          buildIdResult.buildId,
           core,
           fetchClient,
         );
       }
+
+      // Check if review is complete
       if (
         checkThis &&
         (projectStatus?.state !== 'finished' || !projectStatus?.approved)
       ) {
         reviewComplete = false;
       }
+
+      // Track missing screenshots
       const removedSnapshots = projectStatus?.removedSnapshots ?? [];
       if (!allowMissingScreenshots && removedSnapshots.length > 0) {
         missingScreenshots.push({
@@ -141,45 +179,24 @@ export async function verifyE2e(
           removedSnapshots,
         });
       }
-      switch (true) {
-        case !checkThis:
-          icon = '🙈';
-          summary = 'percy build not needed';
-          break;
-        case !allowMissingScreenshots && removedSnapshots.length > 0:
-          icon = '❌';
-          summary = `missing screenshots: ${removedSnapshots.join(', ')}`;
-          break;
-        case projectStatus?.state === 'finished' && projectStatus?.approved:
-          icon = '✅';
-          summary = 'approved';
-          break;
-        case projectStatus?.state === 'finished' && !projectStatus?.approved:
-          icon = '⚠️';
-          summary = 'needs approval';
-          alertWorthy = true;
-          break;
-        case ['waiting', 'pending', 'processing'].includes(
-          projectStatus?.state ?? '',
-        ):
-          icon = '⏳';
-          summary = 'in progress';
-          break;
-        case projectStatus?.state === 'failed':
-          icon = '❌';
-          summary = 'failed';
-          alertWorthy = true;
-          break;
-        case typeof projectStatus?.state === 'undefined':
-          icon = '🚫';
-          summary = 'no Percy build found';
-          alertWorthy = true;
-          break;
-        default:
-          icon = '❓';
-          summary = `Percy state: "${projectStatus.state}"`;
-          alertWorthy = true;
+
+      // Format and log the build status using the centralized utility
+      const { icon, summary } = formatBuildStatus(
+        e2eProject,
+        {
+          state: projectStatus?.state,
+          approved: projectStatus?.approved,
+          removedSnapshots,
+        },
+        checkThis,
+        allowMissingScreenshots,
+      );
+
+      // Track if this status is alert-worthy
+      if (checkThis && isAlertWorthy(projectStatus)) {
+        alertWorthy = true;
       }
+
       core.info(`${icon} ${e2eProject} (${summary})`);
     }
 
@@ -257,6 +274,49 @@ export async function verifyE2e(
       }));
   }
 
+  /**
+   * Retrieve build ID from file or logs with improved error tracking
+   */
+  async function retrieveBuildId(
+    e2eProject: string,
+    buildIdFiles: string[],
+    jobs: WorkflowJob[][],
+    downloadJobLogs: (job_id: string) => Promise<string>,
+    logger: Logger,
+  ): Promise<BuildIdResult> {
+    // First, try to read from the build ID file
+    const buildIdFile = buildIdFiles.find((file) =>
+      file.endsWith(`/percy-build-${e2eProject}.txt`),
+    );
+
+    if (buildIdFile && existsSync(buildIdFile)) {
+      const buildId = readFileSync(buildIdFile, 'utf-8').trim();
+      if (buildId) {
+        return { buildId, source: 'file' };
+      }
+      logDebug(logger, `Build ID file exists but is empty`, {
+        project: e2eProject,
+        file: buildIdFile,
+      });
+    }
+
+    // Fall back to reading from logs
+    const buildId = await readBuildIdFromLogs(
+      e2eProject,
+      jobs,
+      downloadJobLogs,
+    );
+
+    if (buildId) {
+      return { buildId, source: 'logs' };
+    }
+
+    return { buildId: undefined, source: 'not_found' };
+  }
+
+  /**
+   * Read build ID from workflow job logs
+   */
   async function readBuildIdFromLogs(
     e2eProject: string,
     jobs: WorkflowJob[][],
@@ -269,6 +329,7 @@ export async function verifyE2e(
         ),
       )
       .filter(Boolean) as WorkflowJob[];
+
     for (const jobForThisProject of jobsForThisProject) {
       const step = jobForThisProject.steps.find((step) =>
         step.name.startsWith('Percy'),

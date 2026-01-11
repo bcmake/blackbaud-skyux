@@ -1,5 +1,16 @@
 import { Logger } from '../verify-e2e/verify-e2e';
 
+import {
+  PercyErrorCode,
+  logDebug,
+  logError,
+  logWarning,
+  toPercyError,
+} from './percy-error';
+
+/**
+ * Percy build data structure from the API
+ */
 interface Build {
   id: string;
   type: 'builds';
@@ -82,6 +93,9 @@ function getFetchJson(
   };
 }
 
+/**
+ * Check the status of a Percy build
+ */
 export async function checkPercyBuild(
   project: string,
   buildId: string,
@@ -90,8 +104,10 @@ export async function checkPercyBuild(
   fetchClient: Fetch = fetch,
 ): Promise<Partial<BuildSummary>> {
   const fetchJson = getFetchJson(fetchClient);
+  const context = { project, buildId };
 
   try {
+    logDebug(logger, `Checking Percy build`, context);
     const build = await getBuild(buildId, fetchJson);
 
     if (build?.id && `${build.id}` === `${buildId}`) {
@@ -102,6 +118,13 @@ export async function checkPercyBuild(
         ? await getRemovedSnapshots(build.id, fetchJson)
         : [];
 
+      logDebug(logger, `Percy build check complete`, {
+        ...context,
+        state: build.attributes.state,
+        approved,
+        removedSnapshotsCount: removedSnapshots.length,
+      });
+
       return {
         project,
         state: build.attributes.state as BuildSummary['state'],
@@ -109,11 +132,17 @@ export async function checkPercyBuild(
         removedSnapshots,
       };
     } else {
-      logger.warning(`No Percy build found for ${project} build ${buildId}`);
+      logWarning(
+        logger,
+        `No Percy build found for ${project} build ${buildId}`,
+        context,
+      );
     }
   } catch (error) {
-    logger.error(`Error checking Percy build\n\n${(error as Error).stack}`);
+    const percyError = toPercyError(error, PercyErrorCode.API_ERROR, context);
+    logError(logger, percyError, context);
   }
+
   return {
     project,
     state: undefined,
@@ -141,6 +170,7 @@ function buildIsApproved(previousBuild: Build | undefined): boolean {
 }
 
 /**
+ * Get the last good Percy build for a project
  * Called from .github/actions/e2e-affected/action.yml
  */
 export async function getLastGoodPercyBuild(
@@ -151,11 +181,22 @@ export async function getLastGoodPercyBuild(
   /* istanbul ignore next */
   fetchClient: Fetch = fetch,
 ): Promise<{ lastGoodCommit: string; buildId: number }> {
+  const emptyResult = { lastGoodCommit: '', buildId: 0 };
+  const context = {
+    project,
+    shaCount: shaArray.length,
+    allowDeletedScreenshots,
+  };
+
   if (shaArray.length === 0) {
-    return { lastGoodCommit: '', buildId: 0 };
+    logDebug(logger, `No commits to check for last good build`, context);
+    return emptyResult;
   }
+
   const fetchJson = getFetchJson(fetchClient);
+
   try {
+    logDebug(logger, `Looking for last good Percy build`, context);
     const projectId = await getProjectId(project, logger, fetchJson);
     const [previousBuild] = await getBuilds(
       projectId,
@@ -164,39 +205,59 @@ export async function getLastGoodPercyBuild(
       1,
       fetchJson,
     );
+
     if (buildIsApproved(previousBuild)) {
       logger.info(`Found ${previousBuild.attributes['web-url']}`);
+
       if (!allowDeletedScreenshots) {
         const removedSnapshots = await getRemovedSnapshots(
           previousBuild.id,
           fetchJson,
         );
         if (removedSnapshots.length > 0) {
-          // Force the build to re-run.
-          logger.warning(
+          logWarning(
+            logger,
             `Percy build ${previousBuild?.id} has removed screenshots. Re-running.`,
+            {
+              buildId: previousBuild.id,
+              removedSnapshotsCount: removedSnapshots.length,
+            },
           );
-          return { lastGoodCommit: '', buildId: 0 };
+          return emptyResult;
         }
       }
+
       const lastGoodCommit = previousBuild.attributes['commit-html-url']
         .split('/')
         .pop() as string;
       const buildId = Number(
         previousBuild.attributes['web-url'].split('/').pop(),
       );
+
+      logDebug(logger, `Found last good Percy build`, {
+        ...context,
+        lastGoodCommit,
+        buildId,
+      });
+
       return { lastGoodCommit, buildId };
     }
-    logger.warning(
+
+    logWarning(
+      logger,
       `The last build was not finished and/or approved. Re-running.`,
+      context,
     );
   } catch (error) {
-    logger.error(`Error checking Percy: ${error}`);
+    const percyError = toPercyError(error, PercyErrorCode.API_ERROR, context);
+    logError(logger, percyError, context);
   }
-  return { lastGoodCommit: '', buildId: 0 };
+
+  return emptyResult;
 }
 
 /**
+ * Get the target commit for Percy comparison
  * Called from .github/actions/e2e-affected/action.yml
  */
 export async function getPercyTargetCommit(
@@ -206,9 +267,13 @@ export async function getPercyTargetCommit(
   /* istanbul ignore next */
   fetchClient: Fetch = fetch,
 ): Promise<string> {
+  const context = { project, shaCount: shaArray.length };
+
   if (shaArray.length === 0) {
+    logDebug(logger, `No commits to check for target commit`, context);
     return '';
   }
+
   const fetchJson = getFetchJson(fetchClient);
 
   function chunk(shaArray: string[], number: number): string[][] {
@@ -220,8 +285,11 @@ export async function getPercyTargetCommit(
   }
 
   const shaArrayBatchesOf25 = chunk(shaArray, 25);
+
   try {
+    logDebug(logger, `Looking for Percy target commit`, context);
     const projectId = await getProjectId(project, logger, fetchJson);
+
     for (const shaArrayBatch of shaArrayBatchesOf25) {
       const build = await getBuilds(
         projectId,
@@ -230,13 +298,29 @@ export async function getPercyTargetCommit(
         1,
         fetchJson,
       ).then((builds) => builds.pop());
+
       if (build?.id) {
-        return build.attributes['commit-html-url'].split('/').pop() as string;
+        const targetCommit = build.attributes['commit-html-url']
+          .split('/')
+          .pop() as string;
+        logDebug(logger, `Found Percy target commit`, {
+          ...context,
+          targetCommit,
+          buildId: build.id,
+        });
+        return targetCommit;
       }
     }
+
+    logDebug(
+      logger,
+      `No finished Percy build found for target commit`,
+      context,
+    );
     return '';
   } catch (error) {
-    logger.error(`Error checking Percy: ${error}`);
+    const percyError = toPercyError(error, PercyErrorCode.API_ERROR, context);
+    logError(logger, percyError, context);
     return '';
   }
 }

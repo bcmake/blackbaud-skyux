@@ -59,6 +59,12 @@ describe('verify-e2e', () => {
     jest.mock('../percy-api/percy-api', () => ({
       checkPercyBuild,
     }));
+    jest.mock('../percy-api/percy-error', () =>
+      jest.requireActual('../percy-api/percy-error'),
+    );
+    jest.mock('../percy-api/read-build-number-from-logs', () =>
+      jest.requireActual('../percy-api/read-build-number-from-logs'),
+    );
     const { verifyE2e } = await import('./verify-e2e');
     const jobs = [
       {
