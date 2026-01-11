@@ -4,7 +4,8 @@
     "outDir": "../../../dist/out-tsc",
     "types": ["jasmine", "node"],
     "strict": false,
-    "noImplicitReturns": false
+    "noImplicitReturns": false,
+    "isolatedModules": true
   },
   "include": ["**/*.spec.ts", "**/*.d.ts"]
 }
