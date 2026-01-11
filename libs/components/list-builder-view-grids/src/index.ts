@@ -7,6 +7,7 @@ export { SkyColumnSelectorModule } from './lib/modules/column-selector/column-se
 export { SkyListColumnSelectorActionModule } from './lib/modules/list-column-selector-action/list-column-selector-action.module';
 
 export { SkyListViewGridComponent } from './lib/modules/list-view-grid/list-view-grid.component';
+export { NewSkyListViewGridComponent } from './lib/modules/list-view-grid/new-list-view-grid.component';
 export { SkyListViewGridModule } from './lib/modules/list-view-grid/list-view-grid.module';
 
 export { ListViewGridColumnsOrchestrator } from './lib/modules/list-view-grid/state/columns/columns.orchestrator';
@@ -31,3 +32,4 @@ export { SkyListViewGridRowDeleteConfirmArgs } from './lib/modules/list-view-gri
 // Components and directives must be exported to support Angular’s “partial” Ivy compiler.
 // Obscure names are used to indicate types are not part of the public API.
 export { SkyListColumnSelectorActionComponent as λ1 } from './lib/modules/list-column-selector-action/list-column-selector-action.component';
+export { NewSkyListColumnSelectorActionComponent as λ2 } from './lib/modules/list-column-selector-action/new-list-column-selector-action.component';

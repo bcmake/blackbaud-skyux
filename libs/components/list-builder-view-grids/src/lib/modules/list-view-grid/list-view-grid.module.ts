@@ -7,22 +7,24 @@ import { SkyListColumnSelectorActionModule } from '../list-column-selector-actio
 import { SkyListBuilderViewGridsResourcesModule } from '../shared/sky-list-builder-view-grids-resources.module';
 
 import { SkyListViewGridComponent } from './list-view-grid.component';
+import { NewSkyListViewGridComponent } from './new-list-view-grid.component';
 
 /**
  * @deprecated List builder view grid and its features are deprecated. Use data entry grid instead. For more information, see https://developer.blackbaud.com/skyux/components/data-entry-grid.
  */
 @NgModule({
-  declarations: [SkyListViewGridComponent],
+  declarations: [SkyListViewGridComponent, NewSkyListViewGridComponent],
   imports: [
     CommonModule,
     SkyWaitModule,
     SkyGridModule,
     SkyListBuilderViewGridsResourcesModule,
   ],
-  exports: [
-    SkyListViewGridComponent,
-    SkyListColumnSelectorActionModule,
-    SkyGridModule,
-  ],
+    exports: [
+      SkyListViewGridComponent,
+      NewSkyListViewGridComponent,
+      SkyListColumnSelectorActionModule,
+      SkyGridModule,
+    ],
 })
 export class SkyListViewGridModule {}
