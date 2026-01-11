@@ -12,6 +12,7 @@ import { SkyListBuilderViewGridsResourcesModule } from '../shared/sky-list-build
 
 import { SkyListColumnSelectorActionComponent } from './list-column-selector-action.component';
 import { SkyListColumnSelectorButtonComponent } from './list-column-selector-button.component';
+import { NewSkyListColumnSelectorActionComponent } from './new-list-column-selector-action.component';
 
 /**
  * @deprecated List builder view grid and its features are deprecated. Use data entry grid instead. For more information, see https://developer.blackbaud.com/skyux/components/data-entry-grid.
@@ -20,6 +21,7 @@ import { SkyListColumnSelectorButtonComponent } from './list-column-selector-but
   declarations: [
     SkyListColumnSelectorActionComponent,
     SkyListColumnSelectorButtonComponent,
+    NewSkyListColumnSelectorActionComponent,
   ],
   imports: [
     CommonModule,
@@ -29,6 +31,10 @@ import { SkyListColumnSelectorButtonComponent } from './list-column-selector-but
     SkyListToolbarModule,
     SkyIconModule,
   ],
-  exports: [SkyListColumnSelectorActionComponent, SkyColumnSelectorModule],
+  exports: [
+    SkyListColumnSelectorActionComponent,
+    NewSkyListColumnSelectorActionComponent,
+    SkyColumnSelectorModule,
+  ],
 })
 export class SkyListColumnSelectorActionModule {}
