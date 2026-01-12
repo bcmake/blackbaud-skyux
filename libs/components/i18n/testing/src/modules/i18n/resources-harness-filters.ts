@@ -1,7 +1,11 @@
-import { SkyHarnessFilters } from '@skyux/core/testing';
+import { BaseHarnessFilters } from '@angular/cdk/testing';
 
 /**
  * A set of criteria that can be used to filter a list of `SkyResourcesHarness` instances.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
-export interface SkyResourcesHarnessFilters extends SkyHarnessFilters {}
+export interface SkyResourcesHarnessFilters extends BaseHarnessFilters {
+  /**
+   * Only find instances whose `data-sky-id` attribute matches the given value.
+   */
+  dataSkyId?: string;
+}

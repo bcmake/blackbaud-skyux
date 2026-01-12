@@ -1,5 +1,4 @@
-import { HarnessPredicate } from '@angular/cdk/testing';
-import { SkyComponentHarness } from '@skyux/core/testing';
+import { ComponentHarness, HarnessPredicate } from '@angular/cdk/testing';
 
 import { SkyResourcesHarnessFilters } from './resources-harness-filters';
 
@@ -7,7 +6,7 @@ import { SkyResourcesHarnessFilters } from './resources-harness-filters';
  * Harness for interacting with elements that display localized resource strings in tests.
  * This harness can be used to verify that components correctly display localized content.
  */
-export class SkyResourcesHarness extends SkyComponentHarness {
+export class SkyResourcesHarness extends ComponentHarness {
   /**
    * @internal
    */
@@ -20,7 +19,16 @@ export class SkyResourcesHarness extends SkyComponentHarness {
   public static with(
     filters: SkyResourcesHarnessFilters,
   ): HarnessPredicate<SkyResourcesHarness> {
-    return SkyResourcesHarness.getDataSkyIdPredicate(filters);
+    return new HarnessPredicate(SkyResourcesHarness, filters).addOption(
+      'dataSkyId',
+      filters.dataSkyId,
+      (harness, text) =>
+        HarnessPredicate.stringMatches(harness.#getSkyId(), text),
+    );
+  }
+
+  async #getSkyId(): Promise<string | null> {
+    return await (await this.host()).getAttribute('data-sky-id');
   }
 
   /**
