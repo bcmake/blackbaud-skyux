@@ -10,10 +10,7 @@ module.exports = function (config) {
     ...baseConfig,
     coverageReporter: {
       ...baseConfig.coverageReporter,
-      dir: join(
-        __dirname,
-        '../../../../coverage/libs/components/i18n/testing',
-      ),
+      dir: join(__dirname, '../../../../coverage/libs/components/i18n/testing'),
     },
   });
 };

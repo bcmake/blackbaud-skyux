@@ -9,14 +9,13 @@ import { SkyResourcesHarness } from './resources-harness';
 @Component({
   selector: 'sky-resources-test',
   template: `
+    <span data-sky-id="test-resources" skyLibResources>{{ resourceText }}</span>
     <span
-      data-sky-id="test-resources"
+      data-sky-id="test-resources-with-attr"
       skyLibResources
+      [title]="titleText"
       >{{ resourceText }}</span
     >
-    <span data-sky-id="test-resources-with-attr" skyLibResources [title]="titleText">{{
-      resourceText
-    }}</span>
   `,
   standalone: false,
 })
@@ -110,9 +109,9 @@ describe('Resources harness', () => {
 
     fixture.detectChanges();
 
-    await expectAsync(
-      harness.getAttribute('non-existent-attr'),
-    ).toBeResolvedTo(null);
+    await expectAsync(harness.getAttribute('non-existent-attr')).toBeResolvedTo(
+      null,
+    );
   });
 
   it('should find harness without dataSkyId filter', async () => {

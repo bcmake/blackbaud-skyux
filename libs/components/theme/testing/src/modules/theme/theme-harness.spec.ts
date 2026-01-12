@@ -14,10 +14,7 @@ import { SkyThemeHarness } from './theme-harness';
 
 @Component({
   selector: 'sky-theme-test',
-  template: `<div
-    data-sky-id="test-theme"
-    [skyTheme]="themeSettings"
-  >
+  template: `<div data-sky-id="test-theme" [skyTheme]="themeSettings">
     <p>Themed content</p>
   </div>`,
   standalone: false,
