@@ -112,17 +112,8 @@ export class SkyFlyoutInstance<T> {
 
   #_hostController = new Subject<SkyFlyoutMessage>();
 
-  // TODO: Remove this being optional in a future breaking change.
-  constructor(componentInstance?: T) {
-    if (!componentInstance) {
-      console.warn(
-        `The SkyFlyoutInstance was created without a reference to the flyout's child component instance.
-        The instance will not have a reference to this child component.
-        Support for creating an instance without this reference will be removed in a future breaking change.`,
-      );
-    }
-
-    this.componentInstance = componentInstance!;
+  constructor(componentInstance: T) {
+    this.componentInstance = componentInstance;
     this.closed.subscribe(() => {
       this.isOpen = false;
     });

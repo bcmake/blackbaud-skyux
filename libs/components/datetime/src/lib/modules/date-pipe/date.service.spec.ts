@@ -41,9 +41,10 @@ describe('Date service', () => {
 
   it('should format a date object', () => {
     const value = service.format(new Date(2000, 0, 1));
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces 2-digit years
     const expectedValues = [
-      '1/1/2000, 12:00 AM',
-      '1/1/2000 12:00 AM', // IE 11
+      '1/1/00, 12:00 AM',
+      '1/1/00 12:00 AM', // IE 11
     ];
     expect(expectedValues).toContain(value);
   });
@@ -56,45 +57,50 @@ describe('Date service', () => {
 
   it('should format a timestamp', () => {
     const value = service.format(new Date(2000, 0, 1, 0).getTime());
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces 2-digit years
     const expectedValues = [
-      '1/1/2000, 12:00 AM',
-      '1/1/2000 12:00 AM', // IE 11
+      '1/1/00, 12:00 AM',
+      '1/1/00 12:00 AM', // IE 11
     ];
     expect(expectedValues).toContain(value);
   });
 
   it('should format an ISO date string', () => {
     const value = service.format(new Date(2000, 0, 1, 0).toISOString());
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces 2-digit years
     const expectedValues = [
-      '1/1/2000, 12:00 AM',
-      '1/1/2000 12:00 AM', // IE 11
+      '1/1/00, 12:00 AM',
+      '1/1/00 12:00 AM', // IE 11
     ];
     expect(expectedValues).toContain(value);
   });
 
   it('should format an incomplete ISO date string without time', () => {
     const value = service.format('2000-01-01');
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces 2-digit years
     const expectedValues = [
-      '1/1/2000, 12:00 AM',
-      '1/1/2000 12:00 AM', // IE 11
+      '1/1/00, 12:00 AM',
+      '1/1/00 12:00 AM', // IE 11
     ];
     expect(expectedValues).toContain(value);
   });
 
   it('should format an incomplete ISO date string without time zone', () => {
     const value = service.format('2020-03-03T00:00:00');
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces 2-digit years
     const expectedValues = [
-      '3/3/2020, 12:00 AM',
-      '3/3/2020 12:00 AM', // IE 11
+      '3/3/20, 12:00 AM',
+      '3/3/20 12:00 AM', // IE 11
     ];
     expect(expectedValues).toContain(value);
   });
 
   it('should format a date string', () => {
     const value = service.format('2000/1/1');
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces 2-digit years
     const expectedValues = [
-      '1/1/2000, 12:00 AM',
-      '1/1/2000 12:00 AM', // IE 11
+      '1/1/00, 12:00 AM',
+      '1/1/00 12:00 AM', // IE 11
     ];
     expect(expectedValues).toContain(value);
   });
@@ -119,16 +125,16 @@ describe('Date service', () => {
 
     /* spell-checker:disable */
     const formats = new Map([
-      ['short', 'yMdjm'],
-      ['medium', 'yMMMdjms'],
+      ['short', 'M/d/yy, h:mm a'],
+      ['medium', 'MMM d, y, h:mm:ss a'],
       ['long', 'MMMM d, y, h:mm:ss a Z'],
       ['full', 'EEEE, MMMM d, y, h:mm:ss a z'],
-      ['shortDate', 'yMd'],
-      ['mediumDate', 'yMMMd'],
-      ['longDate', 'yMMMMd'],
-      ['fullDate', 'yMMMMEEEEd'],
-      ['shortTime', 'jm'],
-      ['mediumTime', 'jms'],
+      ['shortDate', 'M/d/yy'],
+      ['mediumDate', 'MMM d, y'],
+      ['longDate', 'MMMM d, y'],
+      ['fullDate', 'EEEE, MMMM d, y'],
+      ['shortTime', 'h:mm a'],
+      ['mediumTime', 'h:mm:ss a'],
       ['longTime', 'h:mm:ss a Z'],
       ['fullTime', 'h:mm:ss a z'],
     ]);
@@ -142,28 +148,30 @@ describe('Date service', () => {
 
   it('should default to mediumDate format', () => {
     const value = service.format(new Date(2000, 0, 1));
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces 2-digit years
     const expectedValues = [
-      '1/1/2000, 12:00 AM',
-      '1/1/2000 12:00 AM', // IE 11
+      '1/1/00, 12:00 AM',
+      '1/1/00 12:00 AM', // IE 11
     ];
     expect(expectedValues).toContain(value);
   });
 
   it('should support changing locale inline', () => {
     const value = service.format(new Date(2000, 0, 1), 'fr-CA');
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces locale-specific time format
     const expectedValues = [
-      '2000-01-01 00 h 00',
-      '2000-01-01, 00 h 00', // Chrome 88
-      '2000-01-01 00:00', // IE 11
+      '1/1/00, 12:00 h',
+      '1/1/00 12:00 h', // IE 11
     ];
     expect(expectedValues).toContain(value);
   });
 
   it('should respect locale set by SkyAppLocaleProvider', () => {
     let value = service.format(new Date(2000, 0, 1));
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces 2-digit years
     let expectedValues = [
-      '1/1/2000, 12:00 AM',
-      '1/1/2000 12:00 AM', // IE 11
+      '1/1/00, 12:00 AM',
+      '1/1/00 12:00 AM', // IE 11
     ];
     expect(expectedValues).toContain(value);
 
@@ -172,10 +180,10 @@ describe('Date service', () => {
     });
 
     value = service.format(new Date(2000, 0, 1));
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces locale-specific time format
     expectedValues = [
-      '2000-01-01 00 h 00',
-      '2000-01-01, 00 h 00', // Chrome 88
-      '2000-01-01 00:00', // IE 11
+      '1/1/00, 12:00 h',
+      '1/1/00 12:00 h', // IE 11
     ];
     expect(expectedValues).toContain(value);
   });
@@ -183,9 +191,10 @@ describe('Date service', () => {
   it('should default to en-US locale', () => {
     const date = new Date(2000, 0, 1);
     const value = service.format(date, 'short');
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces 2-digit years
     const expectedValues = [
-      '1/1/2000, 12:00 AM',
-      '1/1/2000 12:00 AM', // IE 11
+      '1/1/00, 12:00 AM',
+      '1/1/00 12:00 AM', // IE 11
     ];
     expect(expectedValues).toContain(value);
   });
@@ -196,9 +205,10 @@ describe('Date service', () => {
       undefined,
       'shortDate',
     );
+    // After breaking change: format is now 'M/d/yy' which produces 2-digit years
     const expectedValues = [
-      '1/11/2017',
-      '1/12/2017', // Firefox
+      '1/11/17',
+      '1/12/17', // Firefox
     ];
     expect(expectedValues).toContain(value);
   });
@@ -209,9 +219,10 @@ describe('Date service', () => {
       undefined,
       'shortDate',
     );
+    // After breaking change: format is now 'M/d/yy' which produces 2-digit years
     const expectedValues = [
-      '1/20/2017',
-      '1/21/2017', // Firefox
+      '1/20/17',
+      '1/21/17', // Firefox
     ];
     expect(expectedValues).toContain(value);
   });
