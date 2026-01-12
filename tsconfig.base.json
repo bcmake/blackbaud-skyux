@@ -89,6 +89,9 @@
         "libs/components/forms/testing/src/public-api.ts"
       ],
       "@skyux/grids": ["libs/components/grids/src/index.ts"],
+      "@skyux/grids/testing": [
+        "libs/components/grids/testing/src/public-api.ts"
+      ],
       "@skyux/help-inline": ["libs/components/help-inline/src/index.ts"],
       "@skyux/help-inline/testing": [
         "libs/components/help-inline/testing/src/public-api.ts"
@@ -123,6 +126,9 @@
       ],
       "@skyux/list-builder-view-grids/testing": [
         "libs/components/list-builder-view-grids/testing/src/public-api.ts"
+      ],
+      "@skyux/list-builder/testing": [
+        "libs/components/list-builder/testing/src/public-api.ts"
       ],
       "@skyux/lists": ["libs/components/lists/src/index.ts"],
       "@skyux/lists/testing": [
@@ -183,6 +189,9 @@
       "@skyux/tabs": ["libs/components/tabs/src/index.ts"],
       "@skyux/tabs/testing": ["libs/components/tabs/testing/src/public-api.ts"],
       "@skyux/text-editor": ["libs/components/text-editor/src/index.ts"],
+      "@skyux/text-editor/testing": [
+        "libs/components/text-editor/testing/src/public-api.ts"
+      ],
       "@skyux/theme": ["libs/components/theme/src/index.ts"],
       "@skyux/tiles": ["libs/components/tiles/src/index.ts"],
       "@skyux/tiles/testing": [
