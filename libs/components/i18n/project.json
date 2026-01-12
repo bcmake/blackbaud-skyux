@@ -4,6 +4,7 @@
   "projectType": "library",
   "sourceRoot": "libs/components/i18n/src",
   "prefix": "sky",
+  "tags": ["component", "npm"],
   "targets": {
     "build": {
       "executor": "@nx/angular:package",
@@ -19,7 +20,15 @@
           "tsConfig": "libs/components/i18n/tsconfig.lib.json"
         }
       },
-      "defaultConfiguration": "production"
+      "defaultConfiguration": "production",
+      "dependsOn": ["^build"],
+      "inputs": [
+        "buildInputs",
+        "^buildInputs",
+        "{workspaceRoot}/libs/components/i18n/testing/src/**/*",
+        "!{workspaceRoot}/libs/components/i18n/testing/src/**/*.spec.ts",
+        "!{workspaceRoot}/libs/components/i18n/testing/src/**/fixtures/**/*"
+      ]
     },
     "test": {
       "executor": "@angular-devkit/build-angular:karma",
@@ -74,6 +83,5 @@
         "command": "ts-node --project ./scripts/tsconfig.json ./scripts/posttest-i18n.ts"
       }
     }
-  },
-  "tags": ["component", "npm"]
+  }
 }

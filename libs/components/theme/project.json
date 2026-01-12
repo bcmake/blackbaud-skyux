@@ -4,6 +4,7 @@
   "projectType": "library",
   "sourceRoot": "libs/components/theme/src",
   "prefix": "sky",
+  "tags": ["component", "npm"],
   "targets": {
     "build": {
       "executor": "@nx/angular:package",
@@ -19,7 +20,15 @@
           "tsConfig": "libs/components/theme/tsconfig.lib.json"
         }
       },
-      "defaultConfiguration": "production"
+      "defaultConfiguration": "production",
+      "dependsOn": ["^build"],
+      "inputs": [
+        "buildInputs",
+        "^buildInputs",
+        "{workspaceRoot}/libs/components/theme/testing/src/**/*",
+        "!{workspaceRoot}/libs/components/theme/testing/src/**/*.spec.ts",
+        "!{workspaceRoot}/libs/components/theme/testing/src/**/fixtures/**/*"
+      ]
     },
     "test": {
       "executor": "@angular-devkit/build-angular:karma",
@@ -67,6 +76,5 @@
         "command": "ts-node --project ./scripts/tsconfig.json ./scripts/postbuild-theme.ts"
       }
     }
-  },
-  "tags": ["component", "npm"]
+  }
 }
