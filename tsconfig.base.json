@@ -94,6 +94,9 @@
         "libs/components/help-inline/testing/src/public-api.ts"
       ],
       "@skyux/i18n": ["libs/components/i18n/src/index.ts"],
+      "@skyux/i18n/testing": [
+        "libs/components/i18n/testing/src/public-api.ts"
+      ],
       "@skyux/icon": ["libs/components/icon/src/index.ts"],
       "@skyux/icon/testing": ["libs/components/icon/testing/src/public-api.ts"],
       "@skyux/indicators": ["libs/components/indicators/src/index.ts"],
@@ -184,6 +187,9 @@
       "@skyux/tabs/testing": ["libs/components/tabs/testing/src/public-api.ts"],
       "@skyux/text-editor": ["libs/components/text-editor/src/index.ts"],
       "@skyux/theme": ["libs/components/theme/src/index.ts"],
+      "@skyux/theme/testing": [
+        "libs/components/theme/testing/src/public-api.ts"
+      ],
       "@skyux/tiles": ["libs/components/tiles/src/index.ts"],
       "@skyux/tiles/testing": [
         "libs/components/tiles/testing/src/public-api.ts"
