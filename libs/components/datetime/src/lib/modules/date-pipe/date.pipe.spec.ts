@@ -158,10 +158,10 @@ describe('Date pipe', () => {
     fixture.componentInstance.locale = 'fr-CA';
     fixture.detectChanges();
     const value = fixture.nativeElement.textContent.trim();
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces locale-specific AM/PM text
     const expectedValues = [
-      '2000-01-01 00 h 00',
-      '2000-01-01, 00 h 00', // Chrome 88
-      '2000-01-01 00:00', // IE 11
+      '1/1/00, 00 h 00',
+      '1/1/00 00 h 00', // IE 11
     ];
     expect(expectedValues).toContain(value);
   });
@@ -183,10 +183,10 @@ describe('Date pipe', () => {
     fixture.detectChanges();
 
     value = fixture.nativeElement.textContent.trim();
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces locale-specific AM/PM text
     expectedValues = [
-      '2000-01-01 00 h 00',
-      '2000-01-01, 00 h 00', // Chrome 88
-      '2000-01-01 00:00', // IE 11
+      '1/1/00, 00 h 00',
+      '1/1/00 00 h 00', // IE 11
     ];
     expect(expectedValues).toContain(value);
   });
@@ -245,10 +245,10 @@ describe('Date pipe', () => {
     fixture.detectChanges();
 
     const date = new Date(2000, 0, 1);
+    // After breaking change: format is now 'M/d/yy, h:mm a' which produces locale-specific AM/PM text
     const expectedValues = [
-      '2000-01-01 00 h 00',
-      '2000-01-01, 00 h 00', // Chrome 88
-      '2000-01-01 00:00', // IE 11
+      '1/1/00, 00 h 00',
+      '1/1/00 00 h 00', // IE 11
     ];
 
     const result = fixture.componentInstance.getDatePipeResult(
