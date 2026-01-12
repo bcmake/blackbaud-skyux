@@ -72,7 +72,9 @@ export class SkyGridHarness extends SkyComponentHarness {
   /**
    * Gets a specific row harness by filter.
    */
-  public async getRow(filters: SkyGridRowHarnessFilters): Promise<SkyGridRowHarness> {
+  public async getRow(
+    filters: SkyGridRowHarnessFilters,
+  ): Promise<SkyGridRowHarness> {
     return await this.locatorFor(SkyGridRowHarness.with(filters))();
   }
 
@@ -174,7 +176,9 @@ export class SkyGridHarness extends SkyComponentHarness {
    * Sorts the grid by the specified column.
    * @param filters The filter criteria to find the column.
    */
-  public async sortByColumn(filters: SkyGridColumnHarnessFilters): Promise<void> {
+  public async sortByColumn(
+    filters: SkyGridColumnHarnessFilters,
+  ): Promise<void> {
     const column = await this.getColumn(filters);
     await column.sort();
   }

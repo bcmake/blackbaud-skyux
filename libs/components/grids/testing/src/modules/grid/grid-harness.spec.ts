@@ -127,7 +127,9 @@ describe('Grid harness', () => {
 
     it('should get columns by filter', async () => {
       const { gridHarness } = await setupTest({ dataSkyId: 'test-grid' });
-      const columns = await gridHarness.getColumnsByFilter({ columnId: 'name' });
+      const columns = await gridHarness.getColumnsByFilter({
+        columnId: 'name',
+      });
       expect(columns.length).toBe(1);
       await expectAsync(columns[0].getColumnId()).toBeResolvedTo('name');
     });
@@ -140,7 +142,9 @@ describe('Grid harness', () => {
 
     it('should return empty array when no columns match filter', async () => {
       const { gridHarness } = await setupTest({ dataSkyId: 'test-grid' });
-      const columns = await gridHarness.getColumnsByFilter({ columnId: 'nonexistent' });
+      const columns = await gridHarness.getColumnsByFilter({
+        columnId: 'nonexistent',
+      });
       expect(columns).toEqual([]);
     });
   });
@@ -166,7 +170,9 @@ describe('Grid harness', () => {
     });
 
     it('should get sort direction', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       fixture.detectChanges();
       const columns = await gridHarness.getColumns();
       const sortDirection = await columns[0].getSortDirection();
@@ -174,7 +180,9 @@ describe('Grid harness', () => {
     });
 
     it('should sort by column', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       fixture.detectChanges();
       const column = await gridHarness.getColumn({ columnId: 'name' });
       await column.sort();
@@ -192,7 +200,9 @@ describe('Grid harness', () => {
     });
 
     it('should sort grid by column using grid harness method', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       fixture.detectChanges();
       await gridHarness.sortByColumn({ columnId: 'email' });
       fixture.detectChanges();
@@ -254,7 +264,9 @@ describe('Grid harness', () => {
       const { gridHarness } = await setupTest({ dataSkyId: 'test-grid' });
       const rows = await gridHarness.getRows();
       await expectAsync(rows[0].getCellText(0)).toBeResolvedTo('John Doe');
-      await expectAsync(rows[0].getCellText(1)).toBeResolvedTo('john@example.com');
+      await expectAsync(rows[0].getCellText(1)).toBeResolvedTo(
+        'john@example.com',
+      );
     });
 
     it('should throw error for out of bounds cell index', async () => {
@@ -277,7 +289,9 @@ describe('Grid harness', () => {
 
   describe('row highlighting', () => {
     it('should check if row is highlighted', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       const rows = await gridHarness.getRows();
       await expectAsync(rows[0].isHighlighted()).toBeResolvedTo(false);
 
@@ -289,7 +303,9 @@ describe('Grid harness', () => {
     });
 
     it('should get highlighted row', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
 
       let highlightedRow = await gridHarness.getHighlightedRow();
       expect(highlightedRow).toBeNull();
@@ -307,7 +323,9 @@ describe('Grid harness', () => {
 
   describe('multiselect', () => {
     it('should check if multiselect is enabled', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       await expectAsync(gridHarness.hasMultiselect()).toBeResolvedTo(false);
 
       fixture.componentInstance.enableMultiselect = true;
@@ -317,7 +335,9 @@ describe('Grid harness', () => {
     });
 
     it('should check if row is selectable', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       const rows = await gridHarness.getRows();
       await expectAsync(rows[0].isSelectable()).toBeResolvedTo(false);
 
@@ -325,11 +345,15 @@ describe('Grid harness', () => {
       fixture.detectChanges();
 
       const rowsWithMultiselect = await gridHarness.getRows();
-      await expectAsync(rowsWithMultiselect[0].isSelectable()).toBeResolvedTo(true);
+      await expectAsync(rowsWithMultiselect[0].isSelectable()).toBeResolvedTo(
+        true,
+      );
     });
 
     it('should check if row is selected', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       fixture.componentInstance.enableMultiselect = true;
       fixture.detectChanges();
 
@@ -338,7 +362,9 @@ describe('Grid harness', () => {
     });
 
     it('should select and deselect row', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       fixture.componentInstance.enableMultiselect = true;
       fixture.detectChanges();
 
@@ -355,7 +381,9 @@ describe('Grid harness', () => {
     });
 
     it('should not re-select already selected row', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       fixture.componentInstance.enableMultiselect = true;
       fixture.componentInstance.selectedRowIds = ['1'];
       fixture.detectChanges();
@@ -369,7 +397,9 @@ describe('Grid harness', () => {
     });
 
     it('should not re-deselect already deselected row', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       fixture.componentInstance.enableMultiselect = true;
       fixture.detectChanges();
 
@@ -398,7 +428,9 @@ describe('Grid harness', () => {
     });
 
     it('should get selected rows', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       fixture.componentInstance.enableMultiselect = true;
       fixture.componentInstance.selectedRowIds = ['1', '3'];
       fixture.detectChanges();
@@ -410,7 +442,9 @@ describe('Grid harness', () => {
     });
 
     it('should return empty array when no rows are selected', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       fixture.componentInstance.enableMultiselect = true;
       fixture.detectChanges();
 
@@ -421,7 +455,9 @@ describe('Grid harness', () => {
 
   describe('grid properties', () => {
     it('should get fit mode', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       await expectAsync(gridHarness.getFitMode()).toBeResolvedTo('width');
 
       fixture.componentInstance.fit = 'scroll';
@@ -431,7 +467,9 @@ describe('Grid harness', () => {
     });
 
     it('should check if grid has toolbar', async () => {
-      const { gridHarness, fixture } = await setupTest({ dataSkyId: 'test-grid' });
+      const { gridHarness, fixture } = await setupTest({
+        dataSkyId: 'test-grid',
+      });
       await expectAsync(gridHarness.hasToolbar()).toBeResolvedTo(false);
 
       fixture.componentInstance.hasToolbar = true;
