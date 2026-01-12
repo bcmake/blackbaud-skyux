@@ -18,8 +18,7 @@
   "peerDependencies": {
     "@angular/cdk": "^20.2.3",
     "@angular/common": "^20.3.0",
-    "@angular/core": "^20.3.0",
-    "@skyux/core": "0.0.0-PLACEHOLDER"
+    "@angular/core": "^20.3.0"
   },
   "dependencies": {
     "@blackbaud/skyux-design-tokens": "3.2.0",

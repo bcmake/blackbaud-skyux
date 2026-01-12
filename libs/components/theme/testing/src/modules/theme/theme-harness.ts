@@ -1,12 +1,11 @@
-import { HarnessPredicate } from '@angular/cdk/testing';
-import { SkyComponentHarness } from '@skyux/core/testing';
+import { ComponentHarness, HarnessPredicate } from '@angular/cdk/testing';
 
 import { SkyThemeHarnessFilters } from './theme-harness-filters';
 
 /**
  * Harness for interacting with a theme directive in tests.
  */
-export class SkyThemeHarness extends SkyComponentHarness {
+export class SkyThemeHarness extends ComponentHarness {
   /**
    * @internal
    */
@@ -19,7 +18,16 @@ export class SkyThemeHarness extends SkyComponentHarness {
   public static with(
     filters: SkyThemeHarnessFilters,
   ): HarnessPredicate<SkyThemeHarness> {
-    return SkyThemeHarness.getDataSkyIdPredicate(filters);
+    return new HarnessPredicate(SkyThemeHarness, filters).addOption(
+      'dataSkyId',
+      filters.dataSkyId,
+      (harness, text) =>
+        HarnessPredicate.stringMatches(harness.#getSkyId(), text),
+    );
+  }
+
+  async #getSkyId(): Promise<string | null> {
+    return await (await this.host()).getAttribute('data-sky-id');
   }
 
   /**
