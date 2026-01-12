@@ -24,7 +24,6 @@ export class SkyRepeaterService implements OnDestroy {
 
   public enableActiveState = false;
 
-  // TODO: Remove 'string' as a valid type in a breaking change.
   public get expandMode(): SkyRepeaterExpandModeType {
     return this.#_expandMode;
   }

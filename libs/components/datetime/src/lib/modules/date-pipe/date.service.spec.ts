@@ -119,16 +119,16 @@ describe('Date service', () => {
 
     /* spell-checker:disable */
     const formats = new Map([
-      ['short', 'yMdjm'],
-      ['medium', 'yMMMdjms'],
+      ['short', 'M/d/yy, h:mm a'],
+      ['medium', 'MMM d, y, h:mm:ss a'],
       ['long', 'MMMM d, y, h:mm:ss a Z'],
       ['full', 'EEEE, MMMM d, y, h:mm:ss a z'],
-      ['shortDate', 'yMd'],
-      ['mediumDate', 'yMMMd'],
-      ['longDate', 'yMMMMd'],
-      ['fullDate', 'yMMMMEEEEd'],
-      ['shortTime', 'jm'],
-      ['mediumTime', 'jms'],
+      ['shortDate', 'M/d/yy'],
+      ['mediumDate', 'MMM d, y'],
+      ['longDate', 'MMMM d, y'],
+      ['fullDate', 'EEEE, MMMM d, y'],
+      ['shortTime', 'h:mm a'],
+      ['mediumTime', 'h:mm:ss a'],
       ['longTime', 'h:mm:ss a Z'],
       ['fullTime', 'h:mm:ss a z'],
     ]);
