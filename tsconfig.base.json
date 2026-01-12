@@ -89,6 +89,9 @@
         "libs/components/forms/testing/src/public-api.ts"
       ],
       "@skyux/grids": ["libs/components/grids/src/index.ts"],
+      "@skyux/grids/testing": [
+        "libs/components/grids/testing/src/public-api.ts"
+      ],
       "@skyux/help-inline": ["libs/components/help-inline/src/index.ts"],
       "@skyux/help-inline/testing": [
         "libs/components/help-inline/testing/src/public-api.ts"
